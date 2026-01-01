@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tldraw-client
+  labels:
+    app: tldraw-client
+spec:
+  selector:
+    app: tldraw-client
+  ports:
+    - name: http-port
+      protocol: TCP
+      port: 80
+      targetPort: 5757
+  type: ClusterIP

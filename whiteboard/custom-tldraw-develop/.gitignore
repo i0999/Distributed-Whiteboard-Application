@@ -1,0 +1,7 @@
+.rooms/
+.assets/
+.yarn
+.git/
+node_modules/
+package-lock.json
+*/dist/*

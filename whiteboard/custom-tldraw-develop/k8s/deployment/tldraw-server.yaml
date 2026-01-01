@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tldraw-server
+  labels:
+    app: tldraw-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tldraw-server
+  template:
+    metadata:
+      labels:
+        app: tldraw-server
+    spec:
+      containers:
+        - name: tldraw-server
+          imagePullPolicy: Never
+          image: tldraw-server:1.0.0
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1024Mi"
+          ports:
+          - containerPort: 5858
+          env:
+          - name: VITE_APP_SERVER_PORT
+            value: '5858'
+          - name: VITE_HOST
+            value: '0.0.0.0'
+          - name: DATABASE_URL
+            value: mongodb://admin:password123@10.0.2.2:27017/whiteboard?retryWrites=true&w=majority&authSource=admin
+          # POC for NGINX routing
+          - name: META_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          # For Prometheus monitoring      
+        - name: node-exporter
+          image: quay.io/prometheus/node-exporter:latest
+          args:
+            - --web.listen-address=:9100
+            - --path.procfs=/host/proc
+            - --path.sysfs=/host/sys
+            - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+          ports:
+            - containerPort: 9100
+              name: metrics
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          volumeMounts:
+            - name: host
+              mountPath: /host
+              readOnly: true
+      volumes:
+        - name: host
+          hostPath:
+            path: /

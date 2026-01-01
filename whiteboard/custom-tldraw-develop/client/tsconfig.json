@@ -1,0 +1,10 @@
+{
+    "extends": "./internal/config/tsconfig.base.json",
+    "include": ["src", "scripts", "vite.config.mts", "client", "server"],
+    "exclude": ["node_modules", "dist", ".tsbuild*"],
+    "compilerOptions": {
+        "noEmit": true,
+        "emitDeclarationOnly": false,
+        "types": ["bun", "node"]
+    }
+}

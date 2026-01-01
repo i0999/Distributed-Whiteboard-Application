@@ -1,0 +1,62 @@
+services:
+    tldraw-server:
+        # image: node:22
+        build:
+            context: ./server
+            dockerfile: Dockerfile
+        working_dir: /app/
+        container_name: tldraw_server
+        volumes:
+            - ./server:/app/
+        environment:
+            VITE_APP_SERVER_PORT: 5858
+            VITE_HOST: '0.0.0.0'
+            DATABASE_URL: mongodb://admin:password123@mongodb-server:27017/whiteboard?retryWrites=true&w=majority&authSource=admin
+        command:
+            - 'bash'
+            - '-c'
+            - 'npm install && npm install yarn && yarn dev-server-node'
+        ports:
+            - '5858:5858'
+        depends_on:
+            - mongodb-server
+
+    tldraw-ui:
+        # image: node:22
+        build:
+            context: ./client
+            dockerfile: Dockerfile
+        working_dir: /app/
+        container_name: tldraw_ui
+        environment:
+            VITE_WORKER_URL: http://localhost:5858
+            VITE_APP_UI_PORT: 5757
+        volumes:
+            - ./client:/app/
+        command:
+            - 'bash'
+            - '-c'
+            - 'npm install && npm install yarn && yarn dev-client -- --host'
+        ports:
+            - '5757:5757'
+        depends_on:
+            - tldraw-server
+
+    mongodb-server:
+        image: mongo:7.0
+        container_name: mongodb_server
+        restart: unless-stopped
+
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: admin
+            MONGO_INITDB_ROOT_PASSWORD: password123
+            MONGO_INITDB_DATABASE: whiteboard
+
+        ports:
+            - '27017:27017'
+
+        volumes:
+            - mongodb_data:/data/db
+
+volumes:
+    mongodb_data:

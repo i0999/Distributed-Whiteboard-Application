@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: whiteboard-ingress
+    annotations:
+        nginx.ingress.kubernetes.io/upstream-hash-by: '$uri'
+        nginx.ingress.kubernetes.io/use-regex: "true"
+        
+spec:
+    ingressClassName: nginx
+    rules:
+        - http:
+              paths:
+                  - path: /api/
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: tldraw-server
+                            port:
+                                number: 5858
+
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: tldraw-client
+                            port:
+                                number: 80
